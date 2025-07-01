@@ -23,8 +23,18 @@ jobs:
       - restore_cache:
           key: deps-{{ checksum "requirements.lock" }}
       - run:
+          name: Run tests if .py files changed
           command: |
-            python3 -m unittest -v
+            git fetch origin main --depth=2
+            CHANGED=$(git diff --name-only origin/main...HEAD)
+            echo "Changed files:"
+            echo "$CHANGED"
+            if echo "$CHANGED" | grep -q '\.py$'; then
+              echo "Python files changed. Running tests."
+              python3 -m unittest -v
+            else
+              echo "No Python file changes. Skipping tests."
+            fi
 
 workflows:
   version: 2
